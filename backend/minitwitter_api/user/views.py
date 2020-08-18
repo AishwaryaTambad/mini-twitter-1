@@ -25,17 +25,17 @@ def login_apiView(request):
     if not user:
         try:
             User.objects.get(username=username)
-            return Response(data={'message': 'wrong password'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'message': 'Wrong password entered'}, status=status.HTTP_400_BAD_REQUEST)
         except:
-            return Response(data={'message': 'wrong username entered'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'message': 'Wrong username entered'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user_data = UserData(user=user, user_bio='hp')
-    serializer = UserDataSerializer(user_data)
+    # userdata = UserData.objects.get(user=user)
+    # serializer = UserDataSerializer(userdata)
 
-    auth_token, created_flag = UserAuthToken.objects.get_or_create(user=user)
-    auth_token.createToken(user)
-    response = {'key': auth_token.getToken()}
-    return Response([serializer.data, response], status=status.HTTP_202_ACCEPTED)
+    auth_token = UserAuthToken.get_or_create_token(user=user)
+    response = {}
+    response['token'] = auth_token
+    return Response(response, status=status.HTTP_202_ACCEPTED)
     # return JsonResponse({'username': 'username', 'password': 'password'})
 
 
@@ -55,5 +55,13 @@ def register_apiView(request):
         user.last_name = last_name
         user.save()
         serializer = UserSerializer(user)
+        user_data = UserData.objects.create(user=user, user_bio='')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response({'error': 'username present'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'error': 'Username is present'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def home_userView(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)

@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from random import randint
+import random
+import string
 
 
 class UserData(models.Model):
@@ -16,11 +17,23 @@ class UserAuthToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=50)
 
-    def createToken(self, user):
-        if not self.user:
-            self.user = user    
-        username = self.user.username
-        self.token = username+"_"+str(randint(10**6, 10**7))
+    @classmethod
+    def get_or_create_token(cls, user):
+        user_auth_token, created_flag = cls.objects.get_or_create(
+            user=user)
 
-    def getToken(self):
-        return self.token
+        username = user_auth_token.user.username
+        user_auth_token.token = cls.generate_token()
+        return user_auth_token.token
+
+    @classmethod
+    def generate_token(cls):
+        letters = string.ascii_lowercase
+        token = ""
+        token_length = 25
+        for i in range(token_length):
+            token += random.choice(letters)
+        return token
+
+
+

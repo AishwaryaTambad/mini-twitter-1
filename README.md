@@ -1,5 +1,5 @@
 # mini-twitter
-Django and backend assignment for mini-twitter
+Django backend assignment for mini-twitter
 
 steps to run server:
 
